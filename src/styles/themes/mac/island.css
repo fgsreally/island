@@ -1,0 +1,280 @@
+/* ===== 整体容器 ===== */
+.island-container {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #080808;
+  box-shadow: var(--island-shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  width: 220px;
+  border-radius: 0 0 22px 22px;
+  transition:
+    width var(--island-collapse),
+    border-radius var(--island-collapse);
+  cursor: default;
+}
+
+.island-container.is-expanded {
+  width: var(--island-width-expanded);
+  border-radius: 0 0 var(--island-radius-expanded) var(--island-radius-expanded);
+  transition:
+    width var(--island-expand),
+    border-radius var(--island-expand);
+}
+
+/* ===== 收缩区 ===== */
+/* flex-end 让内容沉底，紧贴蓝条 */
+.island-collapsed-area {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 2px;
+  height: 36px;
+}
+
+/* ===== 展开区（JS hooks 控制 max-height） ===== */
+.island-expanded-area {
+  width: 100%;
+}
+
+/* ===== 蓝条 ===== */
+.island-bar {
+  flex-shrink: 0;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.island-bar-line {
+  width: 50px;
+  height: 3px;
+  background: var(--island-accent);
+  border-radius: 2px;
+  transition: width var(--island-fade), opacity var(--island-fade);
+}
+
+.island-container.is-expanded .island-bar-line {
+  width: 70px;
+  opacity: 0.6;
+}
+
+.island-bar:hover .island-bar-line {
+  opacity: 1 !important;
+  width: 70px;
+}
+
+/* ===== 展开态通用结构 ===== */
+/* 标题行高度 = 收缩区高度，padding 对应 36px 容器居中效果 */
+.island-expanded-title-row {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.island-expanded-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px 12px;
+  gap: 8px;
+}
+
+.island-expanded-wrap {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* ===== 收起态内容 ===== */
+.island-collapsed-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.island-state-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.island-state-dot.idle    { background: var(--island-text-muted); }
+.island-state-dot.running {
+  background: var(--island-running);
+  animation: island-pulse 1.2s ease-in-out infinite;
+}
+.island-state-dot.done    { background: var(--island-success); }
+
+.island-collapsed-label {
+  color: var(--island-text);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ===== idle 展开体 ===== */
+.idle-expanded-icon { font-size: 24px; line-height: 1; }
+.idle-expanded-title {
+  color: var(--island-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+.idle-expanded-desc {
+  color: var(--island-text-muted);
+  font-size: 11px;
+  text-align: center;
+  line-height: 1.5;
+  max-width: 200px;
+}
+.idle-expanded-btn {
+  padding: 6px 22px;
+  background: var(--island-accent);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 150ms;
+}
+.idle-expanded-btn:hover { opacity: 0.85; }
+
+/* ===== running 收缩态环形 ===== */
+.island-ring-small {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.island-ring-small circle {
+  transition: stroke-dashoffset 300ms ease;
+}
+
+.island-ring-track {
+  stroke: rgba(255,255,255,0.1);
+}
+
+.island-ring-fill {
+  stroke: var(--island-accent);
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: center;
+}
+
+/* ===== running 展开步骤 ===== */
+.island-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.island-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.island-step-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.island-step.done .island-step-icon {
+  background: var(--island-success);
+  color: #000;
+}
+.island-step.active .island-step-icon {
+  background: var(--island-running);
+  color: #000;
+  animation: island-pulse 1.2s ease-in-out infinite;
+}
+.island-step.pending .island-step-icon {
+  border: 1.5px solid rgba(255,255,255,0.2);
+  color: var(--island-text-muted);
+}
+
+.island-step-text {
+  font-size: 12px;
+  color: var(--island-text);
+}
+.island-step.pending .island-step-text { color: var(--island-text-muted); }
+
+/* ===== done todo ===== */
+.island-todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+
+.island-todo-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  color: var(--island-text);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background var(--island-fade);
+}
+.island-todo-item:hover { background: rgba(255,255,255,0.09); }
+.island-todo-item.done { opacity: 0.45; text-decoration: line-through; }
+
+.island-todo-check {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--island-text-muted);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: #000;
+  transition: border-color var(--island-fade), background var(--island-fade);
+}
+.island-todo-item.done .island-todo-check {
+  background: var(--island-success);
+  border-color: var(--island-success);
+}
+.island-todo-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ===== 关键帧 ===== */
+@keyframes island-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.45; transform: scale(1.35); }
+}
+
+/* 收缩态内容状态切换 */
+.island-fade-enter-active { transition: opacity 120ms ease; }
+.island-fade-leave-active { transition: opacity 80ms ease; }
+.island-fade-enter-from,
+.island-fade-leave-to { opacity: 0; }

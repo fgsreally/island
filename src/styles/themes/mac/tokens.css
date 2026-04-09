@@ -1,0 +1,31 @@
+/* macOS Dynamic Island 主题令牌 */
+:root {
+  /* 颜色 */
+  --island-bg: #080808;
+  --island-bg-expanded: rgba(255,255,255,0.04);
+  --island-text: #ffffff;
+  --island-text-muted: #8e8e93;
+  --island-accent: #0a84ff;
+  --island-success: #30d158;
+  --island-error: #ff453a;
+  --island-running: #ff9f0a;
+
+  /* 尺寸 */
+  --island-width-collapsed: 220px;
+  --island-width-expanded: 300px;
+  --island-radius-expanded: 22px;
+  --island-radius-inner: 10px;
+
+  /* 动画 — 展开放慢避免闪烁 */
+  --island-expand: 520ms cubic-bezier(0.16, 1, 0.3, 1);
+  --island-collapse: 320ms cubic-bezier(0.4, 0, 0.2, 1);
+  --island-fade: 180ms ease-out;
+
+  /* 阴影 — 四向柔和，带彩色光晕 */
+  --island-shadow:
+    0 0 0 0.5px rgba(255,255,255,0.06),
+    0 2px 8px  rgba(0,0,0,0.4),
+    0 8px 32px rgba(0,0,0,0.35),
+    0 0 40px   rgba(80,40,180,0.18),
+    0 0 60px   rgba(20,80,200,0.12);
+}
