@@ -57,14 +57,16 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   gap: var(--island-plugin-header-gap);
-  height: calc(var(--island-plugin-header-height) + var(--island-bar-height)); /* 始终固定为收缩时的总高度，让文字绝对静止 */
+  height: calc(var(--island-plugin-header-height) + var(--island-bar-height)); /* 永远保持和收缩状态一样的总高度，绝对不参与高度动画 */
   width: 100%; /* 限制宽度，防止长文本撑破胶囊 */
   padding: 0 var(--island-plugin-header-padding-x);
   box-sizing: border-box;
+  border-bottom: 1px solid transparent; /* 预留边框位置，防止出现时内容跳动 */
+  transition: border-color var(--island-fade);
 }
 
 .island-state-root.is-expanded .island-unified-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom-color: var(--island-border-color);
 }
 
 .island-expandable-outer {

@@ -3,8 +3,8 @@
   --island-scale: 1;
 
   /* 动画 — 全局统一弹性曲线（包含收缩/展开，实现同步回弹） */
-  --island-spring-duration: 600ms;
-  --island-spring-ease: cubic-bezier(0.34, 1.4, 0.64, 1); /* 恢复岛屿的弹性回弹，但去除了之前的反向蓄力 */
+  --island-spring-duration: 500ms;
+  --island-spring-ease: cubic-bezier(0.34, 1.15, 0.64, 1); /* 移除收缩蓄力，减小回弹幅度，更平滑 */
   --island-fade: 200ms ease-out;
 
   /* 颜色 (默认深色) */
