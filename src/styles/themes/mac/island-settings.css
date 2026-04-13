@@ -1,0 +1,122 @@
+/* 托盘打开的插件设置弹窗（非岛路由） */
+
+.island-settings-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+}
+
+.island-settings-dialog {
+  width: min(480px, 100%);
+  max-height: min(90vh, 720px);
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--island-radius-shell-expanded);
+  background: var(--island-bg);
+  box-shadow: var(--island-shadow-pill);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--island-text);
+}
+
+.island-settings-head {
+  padding: 18px 20px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.island-settings-head h2 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.island-settings-hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--island-text-muted);
+}
+
+.island-settings-hint code {
+  font-size: 11px;
+  color: var(--island-accent);
+}
+
+.island-settings-body {
+  padding: 14px 20px;
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.island-settings-section h3 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.island-settings-schema-id {
+  margin: 0 0 8px;
+  font-size: 11px;
+  color: var(--island-text-muted);
+}
+
+.island-settings-json {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: var(--island-radius-inner);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--island-text);
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.island-settings-error {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--island-error);
+}
+
+.island-settings-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.island-settings-btn {
+  padding: 8px 16px;
+  border-radius: var(--island-radius-inner);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+}
+
+.island-settings-btn.ghost {
+  background: transparent;
+  color: var(--island-text-muted);
+}
+
+.island-settings-btn.ghost:hover {
+  color: var(--island-text);
+}
+
+.island-settings-btn.primary {
+  background: var(--island-accent);
+  color: var(--island-on-accent);
+}
+
+.island-settings-btn.primary:hover {
+  opacity: 0.9;
+}

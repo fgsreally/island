@@ -1,18 +1,13 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import IslandView from '../components/IslandView.vue'
+import { routes, handleHotUpdate } from 'vue-router/auto-routes'
 
 const router = createRouter({
   history: createWebHashHistory(),
-  routes: [
-    {
-      path: '/:plugin/:state',
-      component: IslandView,
-    },
-    {
-      path: '/:catchAll(.*)',
-      redirect: '/island-toggle/idle',
-    },
-  ],
+  routes,
 })
+
+if (import.meta.hot) {
+  handleHotUpdate(router)
+}
 
 export default router

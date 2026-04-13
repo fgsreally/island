@@ -1,31 +1,87 @@
 /* macOS Dynamic Island 主题令牌 */
 :root {
-  /* 颜色 */
+  --island-scale: 1;
+
+  /* 动画 — 全局统一弹性曲线（包含收缩/展开，实现同步回弹） */
+  --island-spring-duration: 600ms;
+  --island-spring-ease: cubic-bezier(0.34, 1.4, 0.64, 1); /* 恢复岛屿的弹性回弹，但去除了之前的反向蓄力 */
+  --island-fade: 200ms ease-out;
+
+  /* 颜色 (默认深色) */
   --island-bg: #080808;
   --island-bg-expanded: rgba(255,255,255,0.04);
   --island-text: #ffffff;
   --island-text-muted: #8e8e93;
+  /* 与系统主色同步，运行时在 islandApp 中覆盖 */
+  --island-primary-color: #0a84ff;
   --island-accent: #0a84ff;
   --island-success: #30d158;
   --island-error: #ff453a;
-  --island-running: #ff9f0a;
+  --island-running: #ffcc00;
+  --island-on-accent: #ffffff;
+  --island-on-badge: #000000;
+  --island-ring-track-stroke: rgba(255, 255, 255, 0.1);
+  --island-step-pending-border: rgba(255, 255, 255, 0.2);
+  --island-todo-row-bg: rgba(255, 255, 255, 0.05);
+  --island-todo-row-bg-hover: rgba(255, 255, 255, 0.09);
+  --island-border-color: rgba(255, 255, 255, 0.15);
+  --island-shadow-pill:
+    0 0 0 calc(0.5px * var(--island-scale)) rgba(255, 255, 255, 0.08),
+    0 calc(2px * var(--island-scale)) calc(8px * var(--island-scale)) rgba(0, 0, 0, 0.4);
+}
 
-  /* 尺寸 */
-  --island-width-collapsed: 220px;
-  --island-width-expanded: 300px;
-  --island-radius-expanded: 22px;
-  --island-radius-inner: 10px;
+:root.theme-light {
+  --island-bg: #ffffff;
+  --island-bg-expanded: rgba(0,0,0,0.04);
+  --island-text: #000000;
+  --island-text-muted: #8e8e93;
+  --island-primary-color: #0a84ff;
+  --island-accent: #0a84ff;
+  --island-success: #30d158;
+  --island-error: #ff453a;
+  --island-running: #ffcc00;
+  --island-on-accent: #ffffff;
+  --island-on-badge: #ffffff;
+  --island-ring-track-stroke: rgba(0, 0, 0, 0.1);
+  --island-step-pending-border: rgba(0, 0, 0, 0.2);
+  --island-todo-row-bg: rgba(0, 0, 0, 0.05);
+  --island-todo-row-bg-hover: rgba(0, 0, 0, 0.09);
+  --island-border-color: rgba(0, 0, 0, 0.1);
+  --island-shadow-pill:
+    0 0 0 calc(0.5px * var(--island-scale)) rgba(0, 0, 0, 0.08),
+    0 calc(2px * var(--island-scale)) calc(8px * var(--island-scale)) rgba(0, 0, 0, 0.15);
+}
 
-  /* 动画 — 展开放慢避免闪烁 */
-  --island-expand: 520ms cubic-bezier(0.16, 1, 0.3, 1);
-  --island-collapse: 320ms cubic-bezier(0.4, 0, 0.2, 1);
-  --island-fade: 180ms ease-out;
+:root {
+  /* 尺寸 — 岛壳（非插件内容），通过 --island-scale 适配屏幕 */
+  --island-width-collapsed: calc(140px * var(--island-scale));
+  --island-width-expanded: calc(420px * var(--island-scale));
+  /* 胶囊圆角 */
+  --island-radius-shell-collapsed: calc(24px * var(--island-scale));
+  --island-radius-shell-expanded: calc(24px * var(--island-scale));
+  --island-radius-inner: calc(20px * var(--island-scale));
 
-  /* 阴影 — 四向柔和，带彩色光晕 */
-  --island-shadow:
-    0 0 0 0.5px rgba(255,255,255,0.06),
-    0 2px 8px  rgba(0,0,0,0.4),
-    0 8px 32px rgba(0,0,0,0.35),
-    0 0 40px   rgba(80,40,180,0.18),
-    0 0 60px   rgba(20,80,200,0.12);
+  /* 插件内容区：各页 / IslandContent 用变量，避免写死颜色尺寸 */
+  --island-bar-height: calc(12px * var(--island-scale));
+  --island-bar-line-width: calc(40px * var(--island-scale));
+  --island-bar-line-width-expanded: calc(80px * var(--island-scale));
+  /* 条带略矮 + 上内边距，让内部文案/圆点略下移，不改变居中布局 */
+  --island-plugin-header-height: calc(36px * var(--island-scale));
+  --island-plugin-header-padding-top: calc(0px * var(--island-scale));
+  --island-plugin-header-gap: calc(12px * var(--island-scale));
+  --island-plugin-header-padding-x: calc(24px * var(--island-scale));
+  --island-on-accent: #ffffff;
+  --island-on-badge: #000000;
+  --island-ring-track-stroke: rgba(255, 255, 255, 0.1);
+  --island-step-pending-border: rgba(255, 255, 255, 0.2);
+  --island-todo-row-bg: rgba(255, 255, 255, 0.05);
+  --island-todo-row-bg-hover: rgba(255, 255, 255, 0.09);
+  --island-expanded-body-padding-y: calc(15px * var(--island-scale));
+  --island-expanded-body-padding-x: calc(24px * var(--island-scale));
+  --island-expanded-body-gap: calc(12px * var(--island-scale));
+  --island-font-title: calc(18px * var(--island-scale));
+  --island-font-body: calc(16px * var(--island-scale));
+  --island-font-caption: calc(14px * var(--island-scale));
+  --island-font-micro: calc(13px * var(--island-scale));
+  --island-font-tiny: calc(12px * var(--island-scale));
 }

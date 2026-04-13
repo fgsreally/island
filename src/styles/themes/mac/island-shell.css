@@ -1,0 +1,191 @@
+/* 岛壳专用：定位、宽度、圆角、裁切、阴影、蓝条、子路由滑动过渡（无插件内容样式） */
+
+.island-container {
+  position: absolute;
+  top: 12px; /* 距离顶部留出空间 */
+  left: 50%;
+  transform: translateX(-50%) translateZ(0);
+  backface-visibility: hidden;
+  /* 叠层隔离，减轻光雾与壳过渡合成时的闪屏 */
+  isolation: isolate;
+  background: transparent;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  width: var(--island-width-collapsed);
+  height: calc(var(--island-plugin-header-height) + var(--island-bar-height));
+  border-radius: var(--island-radius-shell-collapsed); /* 四个角都是圆角 */
+  /* 同时动画宽度、高度、圆角，确保绝对同步 */
+  transition:
+    width var(--island-spring-duration) var(--island-spring-ease),
+    height var(--island-spring-duration) var(--island-spring-ease),
+    border-radius var(--island-spring-duration) var(--island-spring-ease);
+  cursor: default;
+  /* 只有岛屿本身响应鼠标事件，透明区域穿透 */
+  pointer-events: auto;
+}
+
+/* 七彩动态呼吸光晕（被误删的彩色 box-shadow） */
+.island-container::before {
+  content: '';
+  position: absolute;
+  inset: -12px; /* 扩大范围以容纳光晕 */
+  z-index: -1;
+  border-radius: inherit;
+  will-change: opacity;
+  background: linear-gradient(
+    115deg,
+    #00f2fe,
+    #4facfe,
+    #fa709a,
+    #b02aff,
+    #00f2fe
+  );
+  background-size: 200% 200%;
+  filter: blur(24px);
+  opacity: 0;
+  transition: opacity var(--island-spring-duration) var(--island-spring-ease);
+  pointer-events: none;
+}
+
+.island-container.is-force-expanded::before {
+  opacity: 1;
+  animation: island-glow-flow 3s linear infinite;
+}
+
+@keyframes island-glow-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.island-container.is-expanded {
+  width: var(--island-width-expanded);
+  /* 展开时的高度 = 头部高度 + 内部内容实际高度 + 底部把手高度 */
+  height: calc(var(--island-plugin-header-height) + var(--island-expanded-content-height, 0px) + var(--island-bar-height));
+  border-radius: var(--island-radius-shell-expanded);
+}
+
+.island-clip {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: inherit;
+  background: var(--island-bg);
+  box-shadow: var(--island-shadow-pill);
+  border: 1px solid var(--island-border-color); /* 浅浅的边框 */
+  transform: translateZ(0); /* 修复子元素模糊问题 */
+  box-sizing: border-box;
+}
+
+/* 蓝色光雾背景：收缩时不显示，展开时扩散 */
+.island-clip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  z-index: 0;
+  will-change: transform, opacity;
+  background: radial-gradient(
+    180px 100px at 50% -20px, /* 椭圆径向渐变，中心在顶部正中偏上（屏幕外） */
+    color-mix(in srgb, var(--island-primary-color) 60%, transparent) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+  /* 收缩状态：不显示 */
+  transform: scale(0.5) translateY(-10px);
+  transform-origin: top center;
+  opacity: 0;
+  transition: 
+    transform var(--island-spring-duration) var(--island-spring-ease),
+    opacity var(--island-spring-duration) var(--island-spring-ease);
+}
+
+.island-container.is-expanded .island-clip::before {
+  /* 展开状态：恢复正常大小，完全显示 */
+  transform: scale(1) translateY(0);
+  opacity: 0.8;
+}
+
+.theme-light .island-clip::before {
+  opacity: 0; /* 亮色模式下收缩时光雾不显示 */
+}
+.theme-light .island-container.is-expanded .island-clip::before {
+  opacity: 0.4; /* 亮色模式下展开时光雾弱一些，避免太刺眼 */
+}
+
+.island-main {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+.island-route-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.route-slide-forward-enter-active,
+.route-slide-forward-leave-active,
+.route-slide-back-enter-active,
+.route-slide-back-leave-active {
+  transition: transform 0.36s cubic-bezier(0.33, 0.86, 0.36, 1);
+}
+
+.route-slide-forward-enter-from {
+  transform: translateX(100%);
+}
+.route-slide-forward-leave-to {
+  transform: translateX(-100%);
+}
+
+.route-slide-back-enter-from {
+  transform: translateX(-100%);
+}
+.route-slide-back-leave-to {
+  transform: translateX(100%);
+}
+
+.island-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  flex-shrink: 0;
+  height: var(--island-bar-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.island-bar-line {
+  width: var(--island-bar-line-width);
+  height: 3px;
+  background: var(--island-primary-color, var(--island-accent));
+  border-radius: 2px;
+  transition: width var(--island-fade), opacity var(--island-fade);
+}
+
+.island-container.is-expanded .island-bar-line {
+  width: var(--island-bar-line-width-expanded);
+  opacity: 0.6;
+}
+
+.island-bar:hover .island-bar-line {
+  opacity: 1 !important;
+  width: var(--island-bar-line-width-expanded);
+}

@@ -10,12 +10,16 @@ html, body {
   height: 100%;
   overflow: hidden;
   background: transparent;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* 与透明窗口配合：整块文档不抢事件，仅岛区域 pointer-events:auto */
+  pointer-events: none;
 }
 
 #root {
   width: 100%;
   height: 100%;
+  /* 透明窗口下大块区域不抢点击，事件落到下层应用 */
+  pointer-events: none;
 }
