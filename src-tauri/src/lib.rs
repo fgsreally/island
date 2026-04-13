@@ -90,7 +90,6 @@ pub fn get_selected_content_via_copy_impl() -> Result<crate::plugins::favorite_s
         // 1. 备份当前的剪贴板文本
         let backup_text = ctx.get_text().ok();
         let backup_files = ctx.get_files().ok();
-        
         // 2. 模拟按下 Ctrl+C
         unsafe {
             let mut inputs = [INPUT::default(); 4];
@@ -263,9 +262,10 @@ pub fn run() {
                                     let dx = end_pt.x - start_pt.x;
                                     let dy = end_pt.y - start_pt.y;
                                     let dist_sq = dx * dx + dy * dy;
-                                    // 移动距离大于约 10 像素才算划词
-                                    if dist_sq > 100 {
-                                        std::thread::sleep(std::time::Duration::from_millis(50));
+                                    // 移动距离大于约 6 像素才算划词，降低漏触发
+                                    if dist_sq > 36 {
+                                        // 略微延迟，确保系统选区已稳定
+                                        std::thread::sleep(std::time::Duration::from_millis(120));
                                         let app_handle_clone = app_handle_for_mouse.clone();
                                         std::thread::spawn(move || {
                                             if let Ok(payload) = get_selected_content_via_copy_impl() {

@@ -4,12 +4,12 @@ import { useRoute, useRouter } from 'vue-router'
 import { definePage } from 'unplugin-vue-router/runtime'
 import IslandContent from '../../../components/IslandContent.vue'
 import MarqueeText from '../../../components/MarqueeText.vue'
+import { useIslandApp } from '../../../app/islandApp'
 import { useIslandToggleSettings } from '../composables/useIslandToggleSettings'
 import { stripExpanded } from '../../../utils/island-route'
 
 definePage({
   meta: {
-    index: 2,
     expandType: 'force',
   },
 })
@@ -17,6 +17,7 @@ definePage({
 const route = useRoute()
 const router = useRouter()
 const settings = useIslandToggleSettings()
+const { setExpanded } = useIslandApp()
 
 const todos = ref([
   { id: 1, text: '收集素材', done: false },
@@ -36,10 +37,13 @@ watch(
       todos.value.forEach((t) => {
         t.done = false
       })
-      router.replace({
-        path: '/island-toggle/idle',
-        query: stripExpanded(route.query),
-      })
+      setExpanded(false)
+      setTimeout(() => {
+        router.replace({
+          path: '/island-toggle/idle',
+          query: stripExpanded(route.query),
+        })
+      }, 120)
     }
   },
   { deep: true },
@@ -47,10 +51,10 @@ watch(
 </script>
 
 <template>
-  <IslandContent>
-    <template #header>
+  <IslandContent collapsed-size="normal" :scroll-when-overflow="true">
+    <template #header="{ scrollWhenOverflow }">
       <div class="island-state-dot done" />
-      <MarqueeText class="island-collapsed-label" :text="settings.collapsedTitleDone" />
+      <MarqueeText class="island-collapsed-label" :text="settings.collapsedTitleDone" :enabled="scrollWhenOverflow" />
     </template>
 
     <div class="island-todo-list">

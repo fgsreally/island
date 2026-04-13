@@ -5,7 +5,6 @@ import { useProvideIslandApp, useIslandApp } from './app/islandApp'
 import { invoke } from '@tauri-apps/api/core'
 import { useIslandTogglePlugin } from './plugins/island-toggle/composables/useIslandTogglePlugin'
 import { useFavoriteSelectionPlugin } from './plugins/favorite-selection/composables/useFavoriteSelectionPlugin'
-import { isExpandedQuery } from './utils/island-route'
 import {
   computeIslandScale,
   loadIslandShellSettings,
@@ -62,18 +61,11 @@ watch(isExpanded, (val) => {
   }
 }, { immediate: true })
 
-const transitionName = ref<'route-slide-forward' | 'route-slide-back'>('route-slide-forward')
+const transitionName = ref<'route-slide-forward'>('route-slide-forward')
+let forceExpandTimer: ReturnType<typeof setTimeout> | null = null
+let forceRouteTransitionTimer: ReturnType<typeof setTimeout> | null = null
 
 let unlistenSettings: (() => void) | undefined
-const removeNavGuard = router.beforeEach((to, from) => {
-  const ti = to.meta?.index
-  const fi = from.meta?.index
-  if (typeof ti === 'number' && typeof fi === 'number' && from.name) {
-    transitionName.value = ti > fi ? 'route-slide-forward' : 'route-slide-back'
-  } else {
-    transitionName.value = 'route-slide-forward'
-  }
-})
 
 let leaveTimer: ReturnType<typeof setTimeout> | null = null
 let enterTimer: ReturnType<typeof setTimeout> | null = null
@@ -126,10 +118,11 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', applyIslandScale)
   if (leaveTimer) clearTimeout(leaveTimer)
   if (enterTimer) clearTimeout(enterTimer)
+  if (forceExpandTimer) clearTimeout(forceExpandTimer)
+  if (forceRouteTransitionTimer) clearTimeout(forceRouteTransitionTimer)
   islandResizeObserver?.disconnect()
   islandResizeObserver = null
   unlistenSettings?.()
-  removeNavGuard()
 })
 
 function onIslandEnter() {
@@ -164,12 +157,39 @@ function onIslandBarClick() {
 
 watch(
   currentExpandType,
-  (type) => {
-    if (type === 'force' && !isExpandedQuery(route.query)) {
-      setExpanded(true)
+  (type, prevType) => {
+    if (forceExpandTimer) {
+      clearTimeout(forceExpandTimer)
+      forceExpandTimer = null
+    }
+    if (type === 'force' && prevType !== 'force') {
+      setExpanded(false)
+      forceExpandTimer = setTimeout(() => {
+        setExpanded(true)
+        forceExpandTimer = null
+      }, 140)
     }
   },
   { immediate: true },
+)
+
+watch(
+  () => route.path,
+  () => {
+    transitionName.value = 'route-slide-forward'
+    if (forceRouteTransitionTimer) {
+      clearTimeout(forceRouteTransitionTimer)
+      forceRouteTransitionTimer = null
+    }
+    if (currentExpandType.value === 'force') {
+      // 不通过路由守卫，改为路由切换后在这里执行「先收缩再展开」
+      setExpanded(false)
+      forceRouteTransitionTimer = setTimeout(() => {
+        setExpanded(true)
+        forceRouteTransitionTimer = null
+      }, 180)
+    }
+  },
 )
 </script>
 

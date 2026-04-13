@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { definePage } from 'unplugin-vue-router/runtime'
-import { emit } from '@tauri-apps/api/event'
+import { emit, listen } from '@tauri-apps/api/event'
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { invoke } from '@tauri-apps/api/core'
 import {
@@ -16,6 +16,7 @@ const busy = ref(false)
 const hint = ref('')
 const isVisible = ref(false)
 let unlistenDrop: (() => void) | null = null
+let unlistenReopen: (() => void) | null = null
 let hideTimer: ReturnType<typeof setTimeout> | null = null
 
 function startHideTimer() {
@@ -117,10 +118,21 @@ onMounted(async () => {
       startHideTimer()
     }
   })
+
+  unlistenReopen = await listen('favorite-hud-reopen', async () => {
+    hint.value = ''
+    await refreshPending()
+    clearHideTimer()
+    requestAnimationFrame(() => {
+      isVisible.value = true
+    })
+    startHideTimer()
+  })
 })
 
 onBeforeUnmount(() => {
   unlistenDrop?.()
+  unlistenReopen?.()
   clearHideTimer()
 })
 </script>
@@ -175,6 +187,7 @@ onBeforeUnmount(() => {
   position: relative;
   width: 100%;
   height: 100%;
+  aspect-ratio: 1 / 1;
   border-radius: 8px;
   cursor: pointer;
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);

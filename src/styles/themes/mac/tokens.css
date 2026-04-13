@@ -3,8 +3,8 @@
   --island-scale: 1;
 
   /* 动画 — 全局统一弹性曲线（包含收缩/展开，实现同步回弹） */
-  --island-spring-duration: 600ms;
-  --island-spring-ease: cubic-bezier(0.4, -0.3, 0.15, 1.4); /* 增加负值，让展开前有明显的收缩蓄力 */
+  --island-spring-duration: 400ms;
+  --island-spring-ease: cubic-bezier(0.34, 1.15, 0.64, 1); /* 缩短时长，减小回弹幅度，去除收缩蓄力 */
   --island-fade: 200ms ease-out;
 
   /* 颜色 (默认深色) */
@@ -54,7 +54,10 @@
 
 :root {
   /* 尺寸 — 岛壳（非插件内容），通过 --island-scale 适配屏幕 */
-  --island-width-collapsed: calc(140px * var(--island-scale));
+  --island-width-collapsed-normal: calc(160px * var(--island-scale));
+  --island-width-collapsed-medium: calc(220px * var(--island-scale));
+  --island-width-collapsed-large: calc(280px * var(--island-scale));
+  --island-width-collapsed: var(--island-width-collapsed-normal);
   --island-width-expanded: calc(420px * var(--island-scale));
   /* 胶囊圆角 */
   --island-radius-shell-collapsed: calc(24px * var(--island-scale));

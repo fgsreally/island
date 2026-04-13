@@ -26,8 +26,7 @@ export function useIslandTogglePlugin() {
       const p = pathForState(state)
       if (route.path !== p) {
         const q = { ...route.query }
-        if (state === 'done') q.expanded = '1'
-        else if (state === 'idle') delete q.expanded
+        if (state === 'idle') delete q.expanded
         router.push({ path: p, query: q })
       }
     },
@@ -47,8 +46,7 @@ export function useIslandTogglePlugin() {
     await router.isReady()
     const p = pathForState(islandStore.state)
     const q = { ...route.query }
-    if (islandStore.state === 'done') q.expanded = '1'
-    else if (islandStore.state === 'idle') delete q.expanded
+    if (islandStore.state === 'idle') delete q.expanded
     if (route.path !== p) {
       router.replace({ path: p, query: q })
     }

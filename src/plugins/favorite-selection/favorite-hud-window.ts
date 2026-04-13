@@ -1,11 +1,12 @@
 import { invoke } from '@tauri-apps/api/core'
 import { LogicalPosition, LogicalSize } from '@tauri-apps/api/dpi'
+import { emit } from '@tauri-apps/api/event'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { primaryMonitor } from '@tauri-apps/api/window'
 
 const LABEL = 'favorite-hud'
-const W = 80
-const H = 80
+const W = 72
+const H = 72
 
 /**
  * 在光标附近打开置顶透明「收藏坞」（物理光标 ≈ 选区附近，类似豆包选区浮层）
@@ -51,6 +52,7 @@ export async function openFavoriteHudNearCursor(): Promise<void> {
     await existing.setPosition(new LogicalPosition(x, y))
     await existing.show()
     await existing.setFocus()
+    await emit('favorite-hud-reopen', {})
     return
   }
 

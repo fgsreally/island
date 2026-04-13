@@ -3,10 +3,10 @@ import { definePage } from 'unplugin-vue-router/runtime'
 import IslandContent from '../../../components/IslandContent.vue'
 import MarqueeText from '../../../components/MarqueeText.vue'
 import { useIslandToggleSettings } from '../composables/useIslandToggleSettings'
+import { islandStore } from '../../../state/island'
 
 definePage({
   meta: {
-    index: 0,
     expandType: 'auto',
   },
 })
@@ -15,16 +15,16 @@ const settings = useIslandToggleSettings()
 </script>
 
 <template>
-  <IslandContent>
-    <template #header>
+  <IslandContent collapsed-size="normal" :scroll-when-overflow="true">
+    <template #header="{ scrollWhenOverflow }">
       <div class="island-state-dot idle" />
-      <MarqueeText class="island-collapsed-label" :text="settings.collapsedTitleIdle" />
+      <MarqueeText class="island-collapsed-label" :text="settings.collapsedTitleIdle" :enabled="scrollWhenOverflow" />
     </template>
 
     <div class="idle-expanded-icon">🔍</div>
     <div class="idle-expanded-title">文件解析助手</div>
     <div class="idle-expanded-desc">选择文件后点击开始，我会帮你提取关键信息</div>
-    <button type="button" class="idle-expanded-btn">开始解析</button>
+    <button type="button" class="idle-expanded-btn" @click="islandStore.advance()">开始解析</button>
   </IslandContent>
 </template>
 

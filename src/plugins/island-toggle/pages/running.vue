@@ -9,7 +9,6 @@ import { islandStore } from '../../../state/island'
 
 definePage({
   meta: {
-    index: 1,
     expandType: 'auto',
   },
 })
@@ -25,10 +24,10 @@ const dashoffset = computed(() =>
 </script>
 
 <template>
-  <IslandContent>
-    <template #header>
+  <IslandContent collapsed-size="medium" :scroll-when-overflow="true">
+    <template #header="{ scrollWhenOverflow }">
       <div class="island-state-dot running" />
-      <MarqueeText class="island-collapsed-label" :text="settings.collapsedTitleRunning" />
+      <MarqueeText class="island-collapsed-label" :text="settings.collapsedTitleRunning" :enabled="scrollWhenOverflow" />
       <svg
         class="island-ring-small"
         :class="{ 'island-ring-faded': expanded }"

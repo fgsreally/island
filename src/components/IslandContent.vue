@@ -1,34 +1,28 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, provide, computed, watch } from 'vue'
 import { useIslandApp } from '../app/islandApp'
 
+type CollapsedSize = 'normal' | 'medium' | 'large'
+
+const props = withDefaults(defineProps<{
+  collapsedSize?: CollapsedSize
+  scrollWhenOverflow?: boolean
+}>(), {
+  collapsedSize: 'normal',
+  scrollWhenOverflow: true,
+})
+
 const { isExpanded: expanded } = useIslandApp()
+provide('island-scroll-when-overflow', computed(() => props.scrollWhenOverflow))
 
 const bodyRef = ref<HTMLElement | null>(null)
-const headerRef = ref<HTMLElement | null>(null)
 let ro: ResizeObserver | null = null
-let headerRo: ResizeObserver | null = null
 
 function updateHeight() {
   if (bodyRef.value) {
     const h = bodyRef.value.offsetHeight
     // 强制将高度写入 CSS 变量，确保容器能精确计算总高度
     document.documentElement.style.setProperty('--island-expanded-content-height', `${h}px`)
-  }
-}
-
-function updateWidth() {
-  if (headerRef.value) {
-    const contentWidth = headerRef.value.scrollWidth
-    // 左右 padding 各 24px (通过 scale 缩放)，这里我们用固定值近似
-    const padding = 48 
-    const minWidth = 140
-    const maxWidth = 360
-    let finalWidth = contentWidth + padding
-    if (finalWidth < minWidth) finalWidth = minWidth
-    if (finalWidth > maxWidth) finalWidth = maxWidth
-    
-    document.documentElement.style.setProperty('--island-width-collapsed', `${finalWidth}px`)
   }
 }
 
@@ -40,27 +34,27 @@ onMounted(() => {
     })
     ro.observe(bodyRef.value)
   }
-
-  updateWidth()
-  if (headerRef.value) {
-    headerRo = new ResizeObserver(() => {
-      updateWidth()
-    })
-    headerRo.observe(headerRef.value)
-  }
 })
 
 onBeforeUnmount(() => {
   ro?.disconnect()
-  headerRo?.disconnect()
+  document.documentElement.style.setProperty('--island-width-collapsed', 'var(--island-width-collapsed-normal)')
 })
+
+watch(
+  () => props.collapsedSize,
+  (size) => {
+    document.documentElement.style.setProperty('--island-width-collapsed', `var(--island-width-collapsed-${size})`)
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
   <div class="island-state-root" :class="{ 'is-expanded': expanded }">
     <div class="island-unified-header">
-      <div class="island-header-content" ref="headerRef">
-        <slot name="header" />
+      <div class="island-header-content">
+        <slot name="header" :scroll-when-overflow="scrollWhenOverflow" />
       </div>
     </div>
     <div class="island-expandable-outer">
@@ -88,7 +82,7 @@ onBeforeUnmount(() => {
   width: 100%; /* 限制宽度，防止长文本撑破胶囊 */
   padding: 0 var(--island-plugin-header-padding-x);
   box-sizing: border-box;
-  transition: height var(--island-spring-duration) var(--island-spring-ease);
+  transition: height var(--island-spring-duration) cubic-bezier(0.2, 0.8, 0.2, 1); /* 使用不回弹的平滑曲线，防止标题上下跳动 */
 }
 
 .island-header-content {

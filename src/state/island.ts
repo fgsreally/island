@@ -1,4 +1,4 @@
-import { reactive } from 'vue'
+import { reactive, watch } from 'vue'
 
 export type IslandState = 'idle' | 'running' | 'done'
 
@@ -12,25 +12,36 @@ export const islandStore = reactive({
 
   advance() {
     if (this.state === 'running') return
-    if (this._timer) { clearInterval(this._timer); this._timer = null }
-
+    
     const idx = STATES.indexOf(this.state)
     this.state = STATES[(idx + 1) % STATES.length]
+  },
+})
 
-    if (this.state === 'running') {
-      this.progress = 0
-      this._timer = setInterval(() => {
-        this.progress = Math.min(this.progress + 20, 100)
-        if (this.progress >= 100) {
-          clearInterval(this._timer!)
-          this._timer = null
-          // 通过改 state 触发 watch，让 App.vue 处理路由
+watch(
+  () => islandStore.state,
+  (newState) => {
+    if (islandStore._timer) {
+      clearInterval(islandStore._timer)
+      islandStore._timer = null
+    }
+
+    if (newState === 'running') {
+      islandStore.progress = 0
+      islandStore._timer = setInterval(() => {
+        islandStore.progress = Math.min(islandStore.progress + 20, 100)
+        if (islandStore.progress >= 100) {
+          clearInterval(islandStore._timer!)
+          islandStore._timer = null
+          // 延迟后自动进入 done 状态
           setTimeout(() => {
-            const idx = STATES.indexOf(this.state)
-            this.state = STATES[(idx + 1) % STATES.length]
+            if (islandStore.state === 'running') {
+              islandStore.state = 'done'
+            }
           }, 800)
         }
       }, 300)
     }
   },
-})
+  { immediate: true }
+)

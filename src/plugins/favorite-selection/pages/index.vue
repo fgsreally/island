@@ -5,7 +5,6 @@ import IslandContent from '../../../components/IslandContent.vue'
 import MarqueeText from '../../../components/MarqueeText.vue'
 import FavoriteList from '../components/FavoriteList.vue'
 import { useFavoriteSelectionPlugin } from '../composables/useFavoriteSelectionPlugin'
-import { useIslandApp } from '../../../app/islandApp'
 
 definePage({
   meta: {
@@ -29,10 +28,10 @@ const stateClass = computed(() => {
 </script>
 
 <template>
-  <IslandContent>
-    <template #header>
+  <IslandContent collapsed-size="normal" :scroll-when-overflow="true">
+    <template #header="{ scrollWhenOverflow }">
       <div class="island-state-dot" :class="stateClass" />
-      <MarqueeText class="island-collapsed-label" :text="stateTitle" />
+      <MarqueeText class="island-collapsed-label" :text="stateTitle" :enabled="scrollWhenOverflow" />
     </template>
     <template #default>
       <div class="favorite-content">

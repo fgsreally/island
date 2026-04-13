@@ -1,14 +1,22 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick, inject, type Ref } from 'vue'
 
-const props = defineProps<{ text: string }>()
+const props = withDefaults(defineProps<{ text: string; enabled?: boolean }>(), {
+  enabled: undefined,
+})
+const injectedEnabled = inject<Ref<boolean> | undefined>('island-scroll-when-overflow', undefined)
 const containerRef = ref<HTMLElement | null>(null)
 const textRef = ref<HTMLElement | null>(null)
 const isOverflowing = ref(false)
 
+function isMarqueeEnabled() {
+  if (typeof props.enabled === 'boolean') return props.enabled
+  return injectedEnabled?.value ?? true
+}
+
 function checkOverflow() {
   if (containerRef.value && textRef.value) {
-    isOverflowing.value = textRef.value.scrollWidth > containerRef.value.clientWidth
+    isOverflowing.value = isMarqueeEnabled() && textRef.value.scrollWidth > containerRef.value.clientWidth
   }
 }
 
@@ -21,7 +29,7 @@ onUnmounted(() => {
   window.removeEventListener('resize', checkOverflow)
 })
 
-watch(() => props.text, async () => {
+watch([() => props.text, () => props.enabled, () => injectedEnabled?.value], async () => {
   await nextTick()
   checkOverflow()
 })
