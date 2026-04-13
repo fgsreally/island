@@ -5,13 +5,30 @@ import { useIslandApp } from '../app/islandApp'
 const { isExpanded: expanded } = useIslandApp()
 
 const bodyRef = ref<HTMLElement | null>(null)
+const headerRef = ref<HTMLElement | null>(null)
 let ro: ResizeObserver | null = null
+let headerRo: ResizeObserver | null = null
 
 function updateHeight() {
   if (bodyRef.value) {
     const h = bodyRef.value.offsetHeight
     // 强制将高度写入 CSS 变量，确保容器能精确计算总高度
     document.documentElement.style.setProperty('--island-expanded-content-height', `${h}px`)
+  }
+}
+
+function updateWidth() {
+  if (headerRef.value) {
+    const contentWidth = headerRef.value.scrollWidth
+    // 左右 padding 各 24px (通过 scale 缩放)，这里我们用固定值近似
+    const padding = 48 
+    const minWidth = 140
+    const maxWidth = 360
+    let finalWidth = contentWidth + padding
+    if (finalWidth < minWidth) finalWidth = minWidth
+    if (finalWidth > maxWidth) finalWidth = maxWidth
+    
+    document.documentElement.style.setProperty('--island-width-collapsed', `${finalWidth}px`)
   }
 }
 
@@ -23,17 +40,28 @@ onMounted(() => {
     })
     ro.observe(bodyRef.value)
   }
+
+  updateWidth()
+  if (headerRef.value) {
+    headerRo = new ResizeObserver(() => {
+      updateWidth()
+    })
+    headerRo.observe(headerRef.value)
+  }
 })
 
 onBeforeUnmount(() => {
   ro?.disconnect()
+  headerRo?.disconnect()
 })
 </script>
 
 <template>
   <div class="island-state-root" :class="{ 'is-expanded': expanded }">
     <div class="island-unified-header">
-      <slot name="header" />
+      <div class="island-header-content" ref="headerRef">
+        <slot name="header" />
+      </div>
     </div>
     <div class="island-expandable-outer">
       <div class="island-expanded-body" ref="bodyRef">
@@ -56,17 +84,24 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--island-plugin-header-gap);
-  height: calc(var(--island-plugin-header-height) + var(--island-bar-height)); /* 永远保持和收缩状态一样的总高度，绝对不参与高度动画 */
+  height: 100%; /* 收缩状态下占据整个胶囊高度，实现绝对垂直居中 */
   width: 100%; /* 限制宽度，防止长文本撑破胶囊 */
   padding: 0 var(--island-plugin-header-padding-x);
   box-sizing: border-box;
-  border-bottom: 1px solid transparent; /* 预留边框位置，防止出现时内容跳动 */
-  transition: border-color var(--island-fade);
+  transition: height var(--island-spring-duration) var(--island-spring-ease);
+}
+
+.island-header-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--island-plugin-header-gap);
+  max-width: 100%;
 }
 
 .island-state-root.is-expanded .island-unified-header {
-  border-bottom-color: var(--island-border-color);
+  height: var(--island-plugin-header-height); /* 展开时恢复正常头部高度 */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .island-expandable-outer {
