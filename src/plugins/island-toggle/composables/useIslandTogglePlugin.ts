@@ -12,11 +12,11 @@ export function useIslandTogglePlugin() {
   const route = useRoute()
 
   function pathForState(state: IslandState) {
-    return `/island-toggle/${state}`
+    return `/plugin/island-toggle/${state}`
   }
 
   function stateFromPath(path: string): IslandState | null {
-    const m = path.match(/\/island-toggle\/(idle|running|done)$/)
+    const m = path.match(/\/plugin\/island-toggle\/(idle|running|done)$/)
     return m ? (m[1] as IslandState) : null
   }
 

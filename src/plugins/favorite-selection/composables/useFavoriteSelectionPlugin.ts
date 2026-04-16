@@ -1,6 +1,6 @@
 import { onMounted, ref, watch } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
-import { listen } from '@tauri-apps/api/event'
+import { listen, emit } from '@tauri-apps/api/event'
 import { useRouter } from 'vue-router'
 import { useFavoriteSelectionSettings } from './useFavoriteSelectionSettings'
 import { pluginSettingsRevision } from '../../../utils/island-settings'
@@ -57,7 +57,7 @@ export function useFavoriteSelectionPlugin() {
   const handleDrop = async (paths: string[]) => {
     isDragging.value = false
     status.value = 'running'
-    router.push('/favorite-selection')
+    router.push('/plugin/favorite-selection')
 
     try {
       for (const path of paths) {
@@ -78,15 +78,17 @@ export function useFavoriteSelectionPlugin() {
   }
 
   async function onFavoriteHotkey() {
-    console.log('[favorite-selection] 快捷键触发，准备打开收藏区...')
+    console.log('[favorite-selection] 选中内容，打开收藏坞...')
     try {
       const payload = await invoke<{ item_type: string; content: string }>('get_selected_content_via_copy')
       console.log('[favorite-selection] 成功获取选区内容:', payload)
       await favoriteSetPendingCapture(payload)
     } catch (err) {
-      console.log('[favorite-selection] 未获取到选区内容或获取失败:', err)
+      console.log('[favorite-selection] 未获取到选区内容:', err)
       await favoriteSetPendingCapture(null)
     }
+    // 通知岛屿显示收藏夹页面
+    await emit('island-navigate-to', { pluginId: 'favorite-selection' })
     await openFavoriteHudNearCursor()
   }
 
@@ -105,7 +107,7 @@ export function useFavoriteSelectionPlugin() {
       return
     }
 
-    const next = normalizeShortcut('Ctrl+T')
+    const next = normalizeShortcut('Alt+K')
     console.log('[favorite-selection] 目标快捷键:', next)
 
     if (unregisterShortcut) {
@@ -122,11 +124,8 @@ export function useFavoriteSelectionPlugin() {
       await register(next, async (e) => {
         console.log('[favorite-selection] 快捷键事件触发:', e)
         if (e.state !== 'Pressed') return
-        try {
-          await onFavoriteHotkey()
-        } catch (err) {
-          console.error('[favorite-selection] 快捷键处理失败（请在 Tauri 桌面内使用，且勿与系统/其它软件抢占 Ctrl+T）', err)
-        }
+        // Alt+K 打开收藏夹岛屿页面
+        router.push('/plugin/favorite-selection')
       })
       console.log(`[favorite-selection] 成功注册快捷键: ${next}`)
     } catch (err) {
@@ -158,7 +157,7 @@ export function useFavoriteSelectionPlugin() {
       await listen('tauri://file-drop-hover', () => {
         isDragging.value = true
         status.value = 'running'
-        router.push('/favorite-selection')
+        router.push('/plugin/favorite-selection')
       })
 
       await listen('tauri://file-drop-cancelled', () => {

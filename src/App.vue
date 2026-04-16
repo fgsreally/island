@@ -5,6 +5,7 @@ import { useProvideIslandApp, useIslandApp } from './app/islandApp'
 import { invoke } from '@tauri-apps/api/core'
 import { useIslandTogglePlugin } from './plugins/island-toggle/composables/useIslandTogglePlugin'
 import { useFavoriteSelectionPlugin } from './plugins/favorite-selection/composables/useFavoriteSelectionPlugin'
+import { useActivePlugin, islandQueueStore } from './state/islandQueue'
 import {
   computeIslandScale,
   loadIslandShellSettings,
@@ -45,6 +46,34 @@ if (isSettingsWindow) {
 const route = useRoute()
 const router = useRouter()
 const { isExpanded, setExpanded } = useIslandApp()
+const activePluginId = useActivePlugin()
+
+const queueWithActive = computed(() => islandQueueStore.getQueueWithActive())
+
+// 当前 active 插件信息（显示在胶囊内）
+const activePlugin = computed(() => {
+  const activeId = activePluginId.value
+  if (!activeId) return null
+  return islandQueueStore.queue.find(q => q.pluginId === activeId)
+})
+
+function onQueueClick(pluginId: string) {
+  console.log('[App] onQueueClick:', pluginId)
+  islandQueueStore.switchTo(pluginId)
+  const routes: Record<string, string> = {
+    'island-toggle': '/plugin/island-toggle/idle',
+    'favorite-selection': '/plugin/favorite-selection',
+  }
+  const targetRoute = routes[pluginId]
+  if (targetRoute) {
+    router.replace(targetRoute).catch(() => {})
+  }
+}
+
+const pluginRoutes: Record<string, string> = {
+  'island-toggle': '/plugin/island-toggle/idle',
+  'favorite-selection': '/plugin/favorite-selection',
+}
 
 const currentExpandType = computed(() => route.meta?.expandType || 'auto')
 
@@ -191,6 +220,20 @@ watch(
     }
   },
 )
+
+// 监听活跃插件变化，自动切换路由
+watch(
+  activePluginId,
+  (newPlugin, oldPlugin) => {
+    console.log('[App] activePluginId changed:', newPlugin, 'old:', oldPlugin)
+    if (newPlugin && newPlugin !== oldPlugin) {
+      const targetRoute = pluginRoutes[newPlugin]
+      if (targetRoute && route.path !== targetRoute) {
+        router.replace(targetRoute).catch(() => {})
+      }
+    }
+  },
+)
 </script>
 
 <template>
@@ -198,13 +241,29 @@ watch(
     v-if="!isSettingsWindow && !isHudWindow && !route.path.startsWith('/settings')"
     ref="islandContainerRef"
     class="island-container"
-    :class="{ 
+    :class="{
       'is-expanded': isExpandedClass,
       'is-force-expanded': isExpandedClass && currentExpandType === 'force'
     }"
     @mouseenter="onIslandEnter"
     @mouseleave="onIslandLeave"
   >
+    <!-- 队列：active 展开为胶囊，其他为圆圈在右边 -->
+    <div class="island-queue-expanded" v-if="queueWithActive.length > 0 && !isExpandedClass">
+      <TransitionGroup name="queue" tag="div" class="queue-inner">
+        <div
+          v-for="plugin in queueWithActive"
+          :key="plugin.pluginId"
+          class="queue-item"
+          :class="{ 'is-active-capsule': plugin.isActive }"
+          @click="onQueueClick(plugin.pluginId)"
+        >
+          <img v-if="plugin.avatar" :src="plugin.avatar" class="avatar-img" />
+          <span v-else class="avatar-text">{{ plugin.pluginId[0].toUpperCase() }}</span>
+        </div>
+      </TransitionGroup>
+    </div>
+
     <div class="island-clip">
       <div class="island-main">
         <div class="island-route-stage">

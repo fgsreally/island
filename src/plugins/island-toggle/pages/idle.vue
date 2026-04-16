@@ -4,6 +4,10 @@ import IslandContent from '../../../components/IslandContent.vue'
 import MarqueeText from '../../../components/MarqueeText.vue'
 import { useIslandToggleSettings } from '../composables/useIslandToggleSettings'
 import { islandStore } from '../../../state/island'
+import { useIslandApp } from '../../../app/islandApp'
+import { useIslandPlugin } from '../../../composables/useIslandPlugin'
+import iconUrl from '../icon.svg?url'
+import { onMounted } from 'vue'
 
 definePage({
   meta: {
@@ -12,6 +16,23 @@ definePage({
 })
 
 const settings = useIslandToggleSettings()
+const { setExpanded } = useIslandApp()
+const { acquire, release } = useIslandPlugin('island-toggle')
+
+// idle 阶段：长时间显示
+let hideTimer: ReturnType<typeof setTimeout> | null = null
+
+onMounted(() => {
+  // 激活并占用岛（无限时长，优先级 0）
+  acquire({
+    priority: 0,
+    duration: 0,
+    label: '等待解析',
+    avatar: iconUrl,
+  })
+
+  // 不自动收起，保持显示
+})
 </script>
 
 <template>

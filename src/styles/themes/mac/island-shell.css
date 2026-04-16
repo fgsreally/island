@@ -77,8 +77,8 @@
   border-radius: inherit;
   background: var(--island-bg);
   box-shadow: var(--island-shadow-pill);
-  border: 1px solid var(--island-border-color); /* 浅浅的边框 */
-  transform: translateZ(0); /* 修复子元素模糊问题 */
+  border: 1px solid var(--island-border-color);
+  transform: translateZ(0);
   box-sizing: border-box;
 }
 
@@ -188,4 +188,101 @@
 .island-bar:hover .island-bar-line {
   opacity: 1 !important;
   width: var(--island-bar-line-width-expanded);
+}
+
+/* 队列展开 - 简化：水平排列的圆圈，可点击切换 */
+.island-queue-expanded {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  z-index: 100;
+  overflow: visible;
+}
+
+.island-queue-expanded .queue-inner {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+/* 队列展开 - 统一圆圈，在胶囊右侧 */
+.island-queue-expanded {
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  z-index: 100;
+}
+
+.island-queue-expanded .queue-inner {
+  display: flex;
+  align-items: center;
+}
+
+.island-queue-expanded .queue-item {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--island-bg);
+  border: 1px solid var(--island-border-color);
+  border-radius: 50%;
+  box-sizing: border-box;
+  overflow: hidden;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.island-queue-expanded .queue-item:not(:first-child) {
+  margin-left: -10px;
+}
+
+.island-queue-expanded .queue-item:hover {
+  transform: scale(1.15);
+  border-color: var(--island-primary-color);
+  z-index: 10;
+}
+
+.island-queue-expanded .avatar-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.island-queue-expanded .avatar-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--island-text);
+}
+
+/* TransitionGroup 队列动画 */
+.queue-move {
+  transition: transform 0.3s ease;
+}
+
+.queue-enter-active,
+.queue-leave-active {
+  transition: all 0.3s ease;
+}
+
+.queue-enter-from {
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.queue-leave-to {
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.queue-leave-active {
+  position: absolute;
 }

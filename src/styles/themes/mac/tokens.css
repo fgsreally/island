@@ -59,6 +59,12 @@
   --island-width-collapsed-large: calc(280px * var(--island-scale));
   --island-width-collapsed: var(--island-width-collapsed-normal);
   --island-width-expanded: calc(420px * var(--island-scale));
+
+  /* 队列指示器 */
+  --island-queue-indicator-width: calc(80px * var(--island-scale));
+  --island-queue-avatar-size: calc(36px * var(--island-scale));
+  --island-queue-avatar-overlap: calc(26px * var(--island-scale));
+  --island-queue-space: calc(2px * var(--island-scale));
   /* 胶囊圆角 */
   --island-radius-shell-collapsed: calc(24px * var(--island-scale));
   --island-radius-shell-expanded: calc(24px * var(--island-scale));

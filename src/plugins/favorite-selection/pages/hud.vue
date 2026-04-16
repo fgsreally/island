@@ -15,9 +15,12 @@ const pending = ref<{ item_type: string; content: string } | null>(null)
 const busy = ref(false)
 const hint = ref('')
 const isVisible = ref(false)
+const isDragOver = ref(false) // 拖拽进入状态
+const isDragEnter = ref(false) // 是否已经开始拖拽（隐藏状态）
 let unlistenDrop: (() => void) | null = null
 let unlistenReopen: (() => void) | null = null
 let hideTimer: ReturnType<typeof setTimeout> | null = null
+let showTimer: ReturnType<typeof setTimeout> | null = null
 
 function startHideTimer() {
   if (hideTimer) clearTimeout(hideTimer)
@@ -28,6 +31,20 @@ function startHideTimer() {
 
 function clearHideTimer() {
   if (hideTimer) clearTimeout(hideTimer)
+}
+
+// 开始显示收藏坞（拖拽进入时调用）
+function showHud() {
+  if (showTimer) clearTimeout(showTimer)
+  showTimer = setTimeout(() => {
+    isVisible.value = true
+  }, 100)
+}
+
+// 隐藏收藏坞（拖拽离开时调用）
+function hideHud() {
+  if (showTimer) clearTimeout(showTimer)
+  isVisible.value = false
 }
 
 async function refreshPending() {
@@ -86,23 +103,27 @@ async function onTextDrop(event: DragEvent) {
 onMounted(async () => {
   document.body.style.pointerEvents = 'auto'
   document.body.style.background = 'transparent'
-  await refreshPending()
 
-  // 触发渐入动画
-  requestAnimationFrame(() => {
-    isVisible.value = true
-  })
-  startHideTimer()
+  // 初始状态：隐藏（等拖拽进入才显示）
+  isVisible.value = false
 
   const w = getCurrentWebviewWindow()
 
   unlistenDrop = await w.onDragDropEvent(async (e) => {
-    if (e.payload.type === 'over' || e.payload.type === 'enter') {
+    const type = (e.payload as any).type
+    if (type === 'over' || type === 'enter') {
       clearHideTimer()
-    } else if (e.payload.type === 'drop' && e.payload.paths.length > 0) {
+      isDragOver.value = true
+      isDragEnter.value = true
+      document.body.style.cursor = 'copy'
+      showHud() // 拖拽进入时显示
+    } else if (type === 'drop' && (e.payload as any).paths.length > 0) {
       busy.value = true
+      isDragOver.value = false
+      isDragEnter.value = false
+      document.body.style.cursor = 'default'
       try {
-        for (const path of e.payload.paths) {
+        for (const path of (e.payload as any).paths) {
           await invokeAddFavorite('file', path)
         }
         hint.value = '已收藏'
@@ -114,8 +135,17 @@ onMounted(async () => {
       } finally {
         busy.value = false
       }
-    } else if (e.payload.type === 'leave') {
-      startHideTimer()
+    } else if (type === 'leave') {
+      isDragOver.value = false
+      document.body.style.cursor = 'default'
+      if (!pending.value) {
+        hideHud() // 没有待收藏内容时隐藏
+      }
+    } else if (type === 'cancel') {
+      isDragOver.value = false
+      isDragEnter.value = false
+      document.body.style.cursor = 'default'
+      hideHud()
     }
   })
 
@@ -134,19 +164,21 @@ onBeforeUnmount(() => {
   unlistenDrop?.()
   unlistenReopen?.()
   clearHideTimer()
+  if (showTimer) clearTimeout(showTimer)
+  document.body.style.cursor = 'default'
 })
 </script>
 
 <template>
-  <div 
-    class="fav-hud" 
-    :class="{ 'is-visible': isVisible }"
+  <div
+    class="fav-hud"
+    :class="{ 'is-visible': isVisible, 'is-drag-over': isDragOver }"
     @mouseenter="clearHideTimer"
     @mouseleave="startHideTimer"
     @dragover.prevent
     @drop.prevent="onTextDrop"
   >
-    <div class="fav-hud__card" :class="{ 'fav-hud__card--busy': busy }" @click="addPendingToFavorites">
+    <div class="fav-hud__card" :class="{ 'fav-hud__card--busy': busy, 'fav-hud__card--drag': isDragOver }" @click="addPendingToFavorites">
       <!-- 动态光晕背景 -->
       <div class="fav-hud__glow"></div>
       
@@ -189,8 +221,9 @@ onBeforeUnmount(() => {
   height: 100%;
   aspect-ratio: 1 / 1;
   border-radius: 8px;
+  border: 2px solid transparent;
   cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease, box-shadow 0.2s ease;
   isolation: isolate;
 }
 
@@ -205,6 +238,22 @@ onBeforeUnmount(() => {
 .fav-hud__card--busy {
   opacity: 0.7;
   pointer-events: none;
+}
+
+/* 拖拽进入时的样式 */
+.fav-hud__card--drag {
+  border-color: var(--island-primary-color) !important;
+  box-shadow: 0 0 12px var(--island-primary-color);
+}
+
+/* 拖拽进入时内容变色 */
+.fav-hud.is-drag-over .fav-hud__icon {
+  color: var(--island-primary-color);
+  transform: scale(1.1);
+}
+
+.fav-hud.is-drag-over .fav-hud__text {
+  color: var(--island-primary-color);
 }
 
 /* 彩色呼吸光晕 */

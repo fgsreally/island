@@ -40,7 +40,7 @@ watch(
       setExpanded(false)
       setTimeout(() => {
         router.replace({
-          path: '/island-toggle/idle',
+          path: '/plugin/island-toggle/idle',
           query: stripExpanded(route.query),
         })
       }, 120)

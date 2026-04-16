@@ -2,12 +2,12 @@
 import { onBeforeMount } from 'vue'
 import { useRouter } from 'vue-router'
 
-/** 仅将 `/island-toggle` 默认引到 idle；布局与过渡在 App.vue */
+/** 仅将 `/plugin/island-toggle` 默认引到 idle */
 const router = useRouter()
 
 onBeforeMount(() => {
   router.replace({
-    path: '/island-toggle/idle',
+    path: '/plugin/island-toggle/idle',
     query: router.currentRoute.value.query,
   })
 })

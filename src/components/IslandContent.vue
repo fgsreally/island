@@ -13,6 +13,7 @@ const props = withDefaults(defineProps<{
 })
 
 const { isExpanded: expanded } = useIslandApp()
+
 provide('island-scroll-when-overflow', computed(() => props.scrollWhenOverflow))
 
 const bodyRef = ref<HTMLElement | null>(null)
@@ -78,11 +79,90 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%; /* 收缩状态下占据整个胶囊高度，实现绝对垂直居中 */
-  width: 100%; /* 限制宽度，防止长文本撑破胶囊 */
-  padding: 0 var(--island-plugin-header-padding-x);
+  height: 100%;
+  width: 100%;
+  padding: 0 calc(var(--island-plugin-header-padding-x) / 2);
   box-sizing: border-box;
-  transition: height var(--island-spring-duration) cubic-bezier(0.2, 0.8, 0.2, 1); /* 使用不回弹的平滑曲线，防止标题上下跳动 */
+  transition: height var(--island-spring-duration) cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* 队列指示器 - 绝对定位在左侧，不影响标题居中 */
+.island-queue-indicator {
+  position: absolute;
+  left: calc(8px * var(--island-scale));
+  display: flex;
+  align-items: center;
+  width: var(--island-queue-indicator-width);
+  flex-shrink: 0;
+}
+
+.island-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--island-plugin-header-gap);
+  max-width: 100%;
+  flex: 1;
+}
+
+.queue-avatar {
+  width: var(--island-queue-avatar-size);
+  height: var(--island-queue-avatar-size);
+  border-radius: 50%;
+  background: var(--island-bg-panel, var(--island-bg));
+  border: 2px solid var(--island-border, var(--island-border-color));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: calc(var(--island-queue-avatar-overlap) * var(--queue-index) * -1);
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+}
+
+.queue-avatar:first-child {
+  margin-left: 0;
+}
+
+.avatar-emoji {
+  font-size: calc(12px * var(--island-scale));
+  line-height: 1;
+}
+
+.queue-avatar.clickable {
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.queue-avatar.clickable:hover {
+  transform: scale(1.1);
+  z-index: 100 !important;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.avatar-text {
+  font-size: calc(10px * var(--island-scale));
+  font-weight: 600;
+  color: var(--island-on-accent);
+}
+
+.queue-overflow {
+  width: var(--island-queue-avatar-size);
+  height: var(--island-queue-avatar-size);
+  border-radius: 50%;
+  background: var(--island-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: calc(var(--island-queue-avatar-overlap) * -1);
+  font-size: calc(9px * var(--island-scale));
+  font-weight: 600;
+  color: var(--island-bg);
 }
 
 .island-header-content {
@@ -91,6 +171,7 @@ watch(
   justify-content: center;
   gap: var(--island-plugin-header-gap);
   max-width: 100%;
+  flex: 1;
 }
 
 .island-state-root.is-expanded .island-unified-header {
